@@ -1,0 +1,58 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <title>Register</title>
+</head>
+<body>
+  <h2>Register</h2>
+  <form id="registerForm" method="POST" action="register.php">
+    <label>Username:</label>
+    <input type="text" id="username" name="username" required>
+    <span id="usernameMessage" style="margin-left: 10px;"></span>
+    <br><br>
+    <label>Password:</label>
+    <input type="password" name="password" required>
+    <br><br>
+    <button type="submit" id="submitBtn" disabled>Register</button>
+  </form>
+
+  <script>
+    const usernameInput = document.getElementById('username');
+    const usernameMessage = document.getElementById('usernameMessage');
+    const submitBtn = document.getElementById('submitBtn');
+    let debounceTimer;
+
+    usernameInput.addEventListener('input', () => {
+      const username = usernameInput.value.trim();
+
+      clearTimeout(debounceTimer);
+      debounceTimer = setTimeout(() => {
+        if (username.length === 0) {
+          usernameMessage.textContent = '';
+          submitBtn.disabled = true;
+          return;
+        }
+
+        fetch(`check-username.php?username=${encodeURIComponent(username)}`)
+          .then(res => res.json())
+          .then(data => {
+            if (data.exists) {
+              usernameMessage.textContent = '❌ Username already taken';
+              usernameMessage.style.color = 'red';
+              submitBtn.disabled = true;
+            } else {
+              usernameMessage.textContent = '✅ Username available';
+              usernameMessage.style.color = 'green';
+              submitBtn.disabled = false;
+            }
+          })
+          .catch(err => {
+            usernameMessage.textContent = 'Error checking username';
+            usernameMessage.style.color = 'orange';
+            submitBtn.disabled = true;
+          });
+      }, 400);
+    });
+  </script>
+</body>
+</html>
